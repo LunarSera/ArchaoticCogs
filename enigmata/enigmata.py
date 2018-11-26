@@ -1,5 +1,5 @@
 import os
-from random import choice
+from random import randchoice
 import discord
 from discord.ext import commands
 from .utils.dataIO import dataIO
@@ -14,7 +14,7 @@ class Enigmata:
     @commands.command()
     async def lore(self):
         """Says a random piece of lore from Enigmata: Stellar War"""
-        await self.bot.say(choice(self.lore))
+        await self.bot.say(user.mention + randchoice(self.lore))
 
 
 def check_folders():
