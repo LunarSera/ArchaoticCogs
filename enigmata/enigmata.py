@@ -1,5 +1,5 @@
 import os
-from random import randchoice
+from random import choice as randchoice
 import discord
 from discord.ext import commands
 from .utils.dataIO import dataIO
