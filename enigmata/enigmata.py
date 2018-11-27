@@ -1,21 +1,28 @@
 import os
-from random import choice as randchoice
 import discord
+from random import choice as randchoice
+from .utils import checks
 from discord.ext import commands
 from .utils.dataIO import dataIO
-
+from __main__ import send_cmd_help
 
 class Enigmata:
+    """These commands give you insight into the lore of Enigmata: Stellar War."""
 
     def __init__(self, bot):
         self.bot = bot
         self.lore = dataIO.load_json("data/enigmata/lore.json")
 
-    @commands.command()
-    async def lore(self):
-        """Says a random piece of lore from Enigmata: Stellar War"""
-        await self.bot.say(user.mention + randchoice(self.lore))
+    @commands.group(no_pm=True, pass_context=True)
+    async def enigmata(self, ctx):
+        """Enigmata Lore."""
+        if ctx.invoked_subcommand is None:
+            await self.bot.send_cmd_help(ctx)
 
+    @enigmata.command()
+    async def story(self):
+        """Says a random piece of lore from Enigmata: Stellar War"""
+        await self.bot.say(randchoice(self.lore))
 
 def check_folders():
     if not os.path.exists("data/enigmata/"):
