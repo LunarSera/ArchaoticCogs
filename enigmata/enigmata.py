@@ -41,9 +41,9 @@ class Enigmata:
         return False
 
     async def make_server_folder(self, server):
-        if not os.path.exists("data/submit/{}".format(server.id)):
+        if not os.path.exists("data/enigmata/{}".format(server.id)):
             print("Creating server folder")
-            os.makedirs("data/submit/{}".format(server.id))
+            os.makedirs("data/enigmata/{}".format(server.id))
 
     async def on_message(self, message):
         if len(message.content) < 2 or message.channel.is_private:
@@ -70,16 +70,20 @@ class Enigmata:
         else:
             return False
 
-    @commands.group(pass_context=True, no_pm=True, invoke_without_command=True)
-    @checks.admin_or_permissions(manage_messages=True)
-    async def listimages(self, ctx):
-        """List images for the server or globally"""
+    @commands.group(no_pm=True, pass_context=True)
+    async def enigmata(self, ctx):
+        """Enigmata Lore."""
         if ctx.invoked_subcommand is None:
-            await ctx.invoke(self.listimages_server)
+            await self.bot.send_cmd_help(ctx)
 
-    @listimages.command(pass_context=True, name="server")
-    async def listimages_server(self, ctx):
-        """List images added to bot"""
+    @enigmata.command()
+    async def story(self):
+        """Says a random piece of lore from Enigmata: Stellar War"""
+        await self.bot.say(randchoice(self.lore))
+
+    @enigmata.command(pass_context=True, no_pm=True)
+    async def list(self, ctx):
+        """Lists images added to bot."""
         msg = ""
         server = ctx.message.server
         channel = ctx.message.channel
@@ -94,16 +98,11 @@ class Enigmata:
         em.set_author(name=server.name, icon_url=server.icon_url)
         await self.bot.send_message(channel, embed=em)
 
-    @commands.group(pass_context=True, no_pm=True, invoke_without_command=True)
-	@checks.admin_or_permissions(manage_messages=True)
-    async def remimage(self, ctx, cmd):
-        """Add images for the bot to upload per server"""
-        if ctx.invoked_subcommand is None:
-            await ctx.invoke(self.rem_image_server, cmd=cmd)
 
-    @remimage.command(pass_context=True, name="server")
-    async def rem_image_server(self, ctx, cmd):
-        """Remove a selected images"""
+    @enigmata.command(pass_context=True, no_pm=True, invoke_without_command=True)
+    @checks.admin_or_permissions(manage_messages=True)
+    async def delete(self, ctx, cmd):
+        """Removes selected image."""
         author = ctx.message.author
         server = ctx.message.server
         channel = ctx.message.channel
@@ -116,17 +115,12 @@ class Enigmata:
             return
         os.remove(self.images["server"][server.id][cmd])
         del self.images["server"][server.id][cmd]
-        dataIO.save_json("data/submit/settings.json", self.images)
+        dataIO.save_json("data/enigmata/settings.json", self.images)
         await self.bot.say("{} has been deleted from this server!".format(cmd))
 
-    @commands.group(pass_context=True, no_pm=True, invoke_without_command=True)
-    async def submit(self, ctx, cmd):
-        """Add images for the bot to upload per server"""
-        if ctx.invoked_subcommand is None:
-            await ctx.invoke(self.add_image_server, cmd=cmd)
-
-    @submit.command(pass_context=True, name="server")
-    async def add_image_server(self, ctx, cmd):
+# invoke_without_command=True
+    @enigmata.command(pass_context=True, no_pm=True, invoke_without_command=True)
+    async def upload(self, ctx, cmd):
         """Add an image to direct upload."""
         author = ctx.message.author
         server = ctx.message.server
@@ -152,7 +146,7 @@ class Enigmata:
             if msg.attachments != []:
                 filename = msg.attachments[0]["filename"][-5:]
                 
-                directory = "data/submit/{}/{}".format(server.id, filename)
+                directory = "data/enigmata/{}/{}".format(server.id, filename)
                 if cmd is None:
                     cmd = filename.split(".")[0]
                 cmd = cmd.lower()
@@ -172,27 +166,16 @@ class Enigmata:
                 break
 
 def check_folder():
-    if not os.path.exists("data/submit"):
-        print("Creating data/submit folder")
-        os.makedirs("data/submit")
+    if not os.path.exists("data/enigmata"):
+        print("Creating data/enigmata folder")
+        os.makedirs("data/enigmata")
 
 def check_file():
     data = {"server":{}}
-    f = "data/submit/settings.json"
+    f = "data/enigmata/settings.json"
     if not dataIO.is_valid_json(f):
         print("Creating default settings.json...")
         dataIO.save_json(f, data)
-
-    @commands.group(no_pm=True, pass_context=True)
-    async def enigmata(self, ctx):
-        """Enigmata Lore."""
-        if ctx.invoked_subcommand is None:
-            await self.bot.send_cmd_help(ctx)
-
-    @enigmata.command()
-    async def story(self):
-        """Says a random piece of lore from Enigmata: Stellar War"""
-        await self.bot.say(randchoice(self.lore))
 
 def check_folders():
     if not os.path.exists("data/enigmata/"):
@@ -210,4 +193,6 @@ def check_files():
 def setup(bot):
     check_folders()
     check_files()
+    check_folder()
+    check_file()
     bot.add_cog(Enigmata(bot))
