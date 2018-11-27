@@ -80,6 +80,37 @@ class Enigmata:
     async def story(self):
         """Says a random piece of lore from Enigmata: Stellar War"""
         await self.bot.say(randchoice(self.lore))
+		
+    @enigmata.command(pass_context=True)
+    async def upload(self, ctx, file=None, *, comment=None):
+        """Upload a file from your local folder"""
+
+        message = ctx.message
+        server = message.server
+
+        if file == None:
+            if os.listdir("data/enigmata/453668709396119562") == []:
+                await self.bot.say("No files to upload. Put them in `data/enigmata/453668709396119562`")
+                return
+
+            msg = "Send `n/enigmata upload 'filename'` to reupload.\nList of available files to upload:\n"
+            for file in os.listdir("data/enigmata/453668709396119562"):
+                msg += "`{}`\n".format(file)
+            await self.bot.say(msg)
+            return
+
+        if "." not in file:
+            for fname in os.listdir("data/enigmata/453668709396119562"):
+                if fname.startswith(file):
+                    file += "." + fname.partition(".")[2]
+                    break
+
+        if os.path.isfile("data/enigmata/453668709396119562/{}".format(file)) is True:
+                await self.bot.upload(fp="data/enigmata/453668709396119562/{}".format(file))
+        else:
+            await self.bot.say(
+                "That file doesn't seem to exist. Make sure it is the good name, try to add the extention (especially if two files have the same name)"
+            )
 
     @enigmata.command(pass_context=True, no_pm=True)
     async def list(self, ctx):
@@ -118,9 +149,8 @@ class Enigmata:
         dataIO.save_json("data/enigmata/settings.json", self.images)
         await self.bot.say("{} has been deleted from this server!".format(cmd))
 
-# invoke_without_command=True
     @enigmata.command(pass_context=True, no_pm=True, invoke_without_command=True)
-    async def upload(self, ctx, cmd):
+    async def save(self, ctx, cmd):
         """Add an image to direct upload."""
         author = ctx.message.author
         server = ctx.message.server
