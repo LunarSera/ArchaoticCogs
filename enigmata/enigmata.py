@@ -17,7 +17,7 @@ class Enigmata:
     def __init__(self, bot):
         self.bot = bot
         self.lore = dataIO.load_json("data/enigmata/lore.json")
-        self.images = dataIO.load_json("data/enigmata/settings.json")
+        self.images = dataIO.load_json("data/enigmata/image.index.json")
         self.session = aiohttp.ClientSession(loop=self.bot.loop)
 
     def __unload(self):
@@ -70,7 +70,7 @@ class Enigmata:
         else:
             return False
 
-    @commands.command(aliases=['nekofacts'])
+    @commands.command(aliases=['nekofacts','catfact','catfacts'])
     async def nekofact(self):
         try:
             url = 'https://catfact.ninja/fact'
@@ -89,13 +89,14 @@ class Enigmata:
         if ctx.invoked_subcommand is None:
             await self.bot.send_cmd_help(ctx)
 
-    @enigmata.command()
+    @enigmata.command(hidden=True)
     async def story(self):
         """Says a random piece of lore from Enigmata: Stellar War"""
         await self.bot.say(randchoice(self.lore))
 		
     @enigmata.command(pass_context=True)
-    async def upload(self, ctx, file=None, *, comment=None):
+    @checks.admin_or_permissions(manage_server=True)
+    async def select(self, ctx, file=None, *, comment=None):
         """Upload a file from your local folder"""
 
         message = ctx.message
@@ -103,10 +104,10 @@ class Enigmata:
 
         if file == None:
             if os.listdir("data/enigmata/453668709396119562") == []:
-                await self.bot.say("No files to upload. Put them in `data/enigmata/453668709396119562`")
+                await self.bot.say("There is nothing saved yet. Use the save command to begin.")
                 return
 
-            msg = "Send `n/enigmata upload 'filename'` to reupload.\nList of available files to upload:\n"
+            msg = "Send `n/enigmata select 'filename'` to reupload.\nSend `n/enigmata delete 'filename'` to remove file from this list.\nRequires *Manage Server Permission*\n\nList of available files to upload:\n"
             for file in os.listdir("data/enigmata/453668709396119562"):
                 msg += "`{}`\n".format(file)
             await self.bot.say(msg)
@@ -127,7 +128,7 @@ class Enigmata:
 
 
     @enigmata.command(pass_context=True, no_pm=True, invoke_without_command=True)
-    @checks.admin_or_permissions(manage_messages=True)
+    @checks.admin_or_permissions(manage_server=True)
     async def delete(self, ctx, cmd):
         """Removes selected image."""
         author = ctx.message.author
@@ -142,8 +143,8 @@ class Enigmata:
             return
         os.remove(self.images["server"][server.id][cmd])
         del self.images["server"][server.id][cmd]
-        dataIO.save_json("data/enigmata/settings.json", self.images)
-        await self.bot.say("{} has been deleted from this server!".format(cmd))
+        dataIO.save_json("data/enigmata/image.index.json", self.images)
+        await self.bot.say("{} has been deleted from my directory.".format(cmd))
 
     @enigmata.command(pass_context=True, no_pm=True, invoke_without_command=True)
     async def save(self, ctx, cmd):
@@ -162,7 +163,7 @@ class Enigmata:
                 return
             else:
                 await self.bot.say("{} added as the command!".format(cmd))
-        await self.bot.say("Upload an image for me to use!")
+        await self.bot.say("Upload an image for me to use! You have 1 minute.")
         while msg is not None:
             msg = await self.bot.wait_for_message(author=author, timeout=60)
             if msg is None:
@@ -171,15 +172,13 @@ class Enigmata:
 
             if msg.attachments != []:
                 filename = msg.attachments[0]["filename"][-5:]
-                
                 directory = "data/enigmata/{}/{}".format(server.id, filename)
                 if cmd is None:
                     cmd = filename.split(".")[0]
                 cmd = cmd.lower()
-                seed = ''.join(random.sample(string.ascii_uppercase + string.digits, k=5))
-                directory = "data/enigmata/{}/{}-{}".format(server.id, seed, filename)
+                directory = "data/enigmata/{}/{}/f{}".format(server.id, cmd, filename)
                 self.images["server"][server.id][cmd] = directory
-                dataIO.save_json("data/enigmata/settings.json", self.images)
+                dataIO.save_json("data/enigmata/image.index.json", self.images)
                 async with self.session.get(msg.attachments[0]["url"]) as resp:
                     test = await resp.read()
                     with open(self.images["server"][server.id][cmd], "wb") as f:
@@ -198,9 +197,9 @@ def check_folder():
 
 def check_file():
     data = {"server":{}}
-    f = "data/enigmata/settings.json"
+    f = "data/enigmata/image.index.json"
     if not dataIO.is_valid_json(f):
-        print("Creating default settings.json...")
+        print("Creating default image.index.json...")
         dataIO.save_json(f, data)
 
 def check_folders():
