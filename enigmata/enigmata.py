@@ -17,6 +17,7 @@ class Enigmata:
     def __init__(self, bot):
         self.bot = bot
         self.lore = dataIO.load_json("data/enigmata/lore.json")
+        self.catfacts = dataIO.load_json("data/enigmata/catfacts.json")
         self.images = dataIO.load_json("data/enigmata/settings.json")
         self.session = aiohttp.ClientSession(loop=self.bot.loop)
 
@@ -69,6 +70,23 @@ class Enigmata:
             return True
         else:
             return False
+			
+#    def __unload(self):
+#    if self.__session:
+#      asyncio.get_event_loop().create_task(self.__session.close())
+
+    @commands.command(aliases=['nekofacts'])
+    async def nekofact(self):
+        try:
+            url = 'https://catfact.ninja/fact'
+            conn = aiohttp.TCPConnector(verify_ssl=False)
+            session = aiohttp.ClientSession(connector=conn)
+            async with session.get(url) as response:
+                fact = (await response.json())['fact']
+                await self.bot.say(fact)
+                session.close()
+        except:
+            await self.bot.say("I was unable to get a cat fact.")
 
     @commands.group(no_pm=True, pass_context=True)
     async def enigmata(self, ctx):
@@ -111,23 +129,6 @@ class Enigmata:
             await self.bot.say(
                 "That file doesn't seem to exist. Make sure it is the good name, try to add the extention (especially if two files have the same name)"
             )
-
-    @enigmata.command(pass_context=True, no_pm=True)
-    async def list(self, ctx):
-        """Lists images added to bot."""
-        msg = ""
-        server = ctx.message.server
-        channel = ctx.message.channel
-        if server.id not in self.images["server"]:
-            await self.bot.say("{} does not have any images saved!".format(server.name))
-            return
-        
-        for image in self.images["server"][server.id].keys():
-            msg += image + ", "
-        em = discord.Embed(timestamp=ctx.message.timestamp)
-        em.description = msg[:len(msg)-2]
-        em.set_author(name=server.name, icon_url=server.icon_url)
-        await self.bot.send_message(channel, embed=em)
 
 
     @enigmata.command(pass_context=True, no_pm=True, invoke_without_command=True)
