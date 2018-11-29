@@ -107,7 +107,7 @@ class Enigmata:
                 await self.bot.say("There is nothing saved yet. Use the save command to begin.")
                 return
 
-            msg = "Send `n/enigmata select 'filename'` to reupload.\nSend `n/enigmata delete 'filename'` to remove file from this list.\nRequires *Manage Server Permission*\n\nList of available files to upload:\n"
+            msg = "Send `n/enigmata select 'filename'` to reupload.\nSend `n/enigmata delete 'filename'` to remove file from this list.'(do not add file extension)'\nRequires *Manage Server Permission*\n\nList of available files to upload:\n"
             for file in os.listdir("data/enigmata/453668709396119562"):
                 msg += "`{}`\n".format(file)
             await self.bot.say(msg)
@@ -148,7 +148,7 @@ class Enigmata:
 
     @enigmata.command(pass_context=True, no_pm=True, invoke_without_command=True)
     async def save(self, ctx, cmd):
-        """Add an image to direct upload."""
+        """Add an image to direct upload.\n Where cmd = name of your choice."""
         author = ctx.message.author
         server = ctx.message.server
         channel = ctx.message.channel
@@ -171,12 +171,12 @@ class Enigmata:
                 break
 
             if msg.attachments != []:
-                filename = msg.attachments[0]["filename"][-5:]
-                directory = "data/enigmata/{}/{}".format(server.id, filename)
+                filename = msg.attachments[0]["filename"][-4:]
+                directory = "data/enigmata/{}{}".format(server.id, filename)
                 if cmd is None:
                     cmd = filename.split(".")[0]
                 cmd = cmd.lower()
-                directory = "data/enigmata/{}/{}/f{}".format(server.id, cmd, filename)
+                directory = "data/enigmata/{}/{}{}".format(server.id, cmd, filename)
                 self.images["server"][server.id][cmd] = directory
                 dataIO.save_json("data/enigmata/image.index.json", self.images)
                 async with self.session.get(msg.attachments[0]["url"]) as resp:
