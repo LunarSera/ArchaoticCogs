@@ -17,7 +17,6 @@ class Enigmata:
     def __init__(self, bot):
         self.bot = bot
         self.lore = dataIO.load_json("data/enigmata/lore.json")
-        self.catfacts = dataIO.load_json("data/enigmata/catfacts.json")
         self.images = dataIO.load_json("data/enigmata/settings.json")
         self.session = aiohttp.ClientSession(loop=self.bot.loop)
 
@@ -70,10 +69,6 @@ class Enigmata:
             return True
         else:
             return False
-			
-#    def __unload(self):
-#    if self.__session:
-#      asyncio.get_event_loop().create_task(self.__session.close())
 
     @commands.command(aliases=['nekofacts'])
     async def nekofact(self):
