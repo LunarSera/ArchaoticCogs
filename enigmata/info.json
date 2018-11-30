@@ -4,5 +4,7 @@
     "DESCRIPTION" : "Say a random piece of lore from Enigmata: Stellar War\nWARNING: SPOILERS FOR Enigmata: Stellar War",
     "NAME" : "Enigmata",
     "TAGS" : ["Enigmata: Stellar War"],
-    "INSTALL_MSG" : "This cog *should* be private and is dedicated to Rosh and his continued development of Enigmata: Stellar War Defense as the new mobile version. Feel free to join us @ discord.gg/cHwv7gm"
+    "INSTALL_MSG" : "This cog *should* be private and is dedicated to Rosh and his continued development of Enigmata: Stellar War Defense as the new mobile version. Feel free to join us @ discord.gg/cHwv7gm Some data will be altered/edited. other data may not be. 
+Do not be alarmed if you realize I "stole" code from other developers as I will be rewriting the bot to suit my own needs and the needs of the server it's on. Don't expect this cog (Enigmata) to run flawlessly on any other bot. If you analyze the code, you will realize I put absolute targets on parts of it.
+As I've said countless times, this code is personalized for the server the bot runs on."
 }
